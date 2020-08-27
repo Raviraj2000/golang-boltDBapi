@@ -6,6 +6,8 @@ import ("fmt"
         "github.com/satori/go.uuid"
         )
 
+
+
 type User struct {
   ID uuid.UUID `json:"ID"`
   FirstName string `json:"FirstName"`
@@ -50,8 +52,10 @@ return err
 }
 
 
-func(d *Database) RetrieveUser(bucket string, key string)(data []byte, err error) {
+func(d *Database) RetrieveUser(key string)(data []byte, err error) {
   err = d.db.View(func(tx *bolt.Tx) error {
+      var bucket string
+      bucket = "DB"
       b := tx.Bucket([]byte(bucket))
       val := b.Get([]byte(key))
       if val != nil{
@@ -60,7 +64,7 @@ func(d *Database) RetrieveUser(bucket string, key string)(data []byte, err error
       }
       val = b.Get([]byte(fmt.Sprintf("%s", key)))
       if val == nil {
-        fmt.Println("User does not exist. Check name of bucket and user key again.")
+        fmt.Println("User does not exist. Check user key again.")
         return nil
       }
 
@@ -73,8 +77,10 @@ func(d *Database) RetrieveUser(bucket string, key string)(data []byte, err error
   return
 }
 
-func (d *Database) DeleteUser(bucket string, key string) error {
+func (d *Database) DeleteUser(key string) error {
   return d.db.Update(func(tx *bolt.Tx) error {
+      var bucket string
+      bucket = "DB"
       b := tx.Bucket([]byte(bucket))
       b.Delete([]byte(key))
       fmt.Println("User Deleted")
@@ -82,11 +88,14 @@ func (d *Database) DeleteUser(bucket string, key string) error {
   })
 }
 
-func (d *Database) UpdateUser(bucket string, key string, updatedUser User) error {
+func (d *Database) UpdateUser(key string, updatedUser User) error {
   err := d.db.Update(func(tx *bolt.Tx) error {
     var user User
+    var bucket string
+    bucket = "DB"
     b := tx.Bucket([]byte(bucket))
     r := b.Get([]byte(key))
+    
     err := json.Unmarshal(r, &user)
     if err != nil {
       return err
@@ -110,9 +119,11 @@ func (d *Database) UpdateUser(bucket string, key string, updatedUser User) error
 return err
 }
 
-func (d *Database) ListUsers(bucket string) (vals [][]byte, err error) {
+func (d *Database) ListUsers() (vals [][]byte, err error) {
   vals = make([][]byte, 0)
   err = d.db.View(func(tx *bolt.Tx) error {
+          var bucket string
+          bucket = "DB"
         	b := tx.Bucket([]byte(bucket))
         	c := b.Cursor()
 
